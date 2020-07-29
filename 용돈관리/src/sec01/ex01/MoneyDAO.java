@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,59 +11,59 @@ import java.util.List;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
-import java.sql.DriverManager;
 
 
 //오라클 DMBS의 데이터베이스와 연결하여 작업할 DAO클래스
 public class MoneyDAO {
 
 	//데이터베이스 관련 작업에 필요한 객체들을 저장할 변수 선언
-	private Connection con; //DB와의 연결정보를 담고 있는 객체를 저장할 변수선언
-	private PreparedStatement pstmt;//DB와 연결후 DB에 SQL문을 전달하여 실행할 객체를 저장할 변수 선언
-	private DataSource dataFactory;//커넥션풀 역할을 하는 객체를 저장할 변수 선언
-	private ResultSet rs;//검색한 결과 데이터를 임시로 저장할 테이블 형식의 구조를 갇는 객체를 저장할 변수 선언
+//	private Connection con; //DB와의 연결정보를 담고 있는 객체를 저장할 변수선언
+//	private PreparedStatement pstmt;//DB와 연결후 DB에 SQL문을 전달하여 실행할 객체를 저장할 변수 선언
+//	private DataSource dataFactory;//커넥션풀 역할을 하는 객체를 저장할 변수 선언
+//	private ResultSet rs;//검색한 결과 데이터를 임시로 저장할 테이블 형식의 구조를 갖는 객체를 저장할 변수 선언
+//	
+//public static final String DRIVER = "com.mysql.jdbc.Driver";
+//public static final String DBURL = "jdbc:mysql://localhost:3306/2020money";
+//public static final String DBID = "root";
+//public static final String DBPW = "1234";
 	
-	public static final String DRIVER = "com.mysql.jdbc.Driver";
-	public static final String DBURL = "jdbc:mysql://localhost:3306/2020money";
-	public static final String DBID = "root";
-	public static final String DBPW = "1234";
 	
+	// 전역변수로 선언
+		Connection con = null;
+		ResultSet rs = null;
+		PreparedStatement pstmt = null;
+		String sql = "";
+
+		public void resourceClose() {
+			try {
+				if (pstmt != null)
+					pstmt.close();
+				if (rs != null)
+					rs.close();
+				if (con != null)
+					con.close();
+			} catch (Exception e) {
+				System.out.println("자원해제 실패 : " + e);
+			}
+		}// resourceClose()
+
+		private Connection getConnection() throws Exception {
+
+			Connection con = null;
+			Context init = new InitialContext();
+			// 커넥션풀 얻기
+			DataSource ds = (DataSource) init.lookup("java:comp/env/jdbc/2020money");
+			// 커넥션풀로 부터 커넥션 객체 빌려와서 얻기
+			con = ds.getConnection();
+
+			return con; // 커넥션을 반환
+
+		}
+		
+		
 	//커넥션풀(DataSource)객체를 얻는 생성자
 	public MoneyDAO() {
 	
-		try{
-			//톰캣이 실행되면 context.xml의 <Resource/>설정을 읽어와서
-			//톰캣 메모리에 프로젝트 단위로 Context객체들을 생성 해서 저장 해둔다.
-			//이때 InitialContext객체가 하는 역할은  톰캣 실행시 context.xml에 의해서 생성된
-			//Context객체들에 접근을 하는 역할을 합니다.
-			// Context ctx = new InitialContext();
-			// Class.forName("com.mysql.cj.jdbc.Driver");
-			 // ystem.out.println("드라이버 로드 성공");
-	
-
-			Class.forName("com.mysql.jdbc.Driver");
-			con = DriverManager.getConnection(DBURL, DBID, DBPW); 
-			System.out.println("드라이버 로드 성공 ");
-
-
-			//JNDI방법으로 접근 하기 위해 기본경로(java:/comp/env)를 지정합니다.
-		
-			  Context context = new InitialContext(); //이름기반 검색
-				// Context envContext = (Context)context.lookup("java:/comp/env");
-			//그런후 다시 톰캣은 context.xml에 설정한 <Resource name="jdbc/oracle" ..>태그의
-			//name속성값  "jdbc/oracle" 이름을 이용해  
-			//톰캣에 미리 DB연결해 놓은 DataSource(커넥션풀 역할을 하는 객체)를 받아옵니다.
-			// dataFactory = (DataSource)envContext.lookup("jdbc/oracle");
-			
-			//  DataSource ds = (DataSource)context.lookup("java:comp/env/jdbc/mysql");
-			  DataSource  ds = (DataSource)context.lookup("java:comp/env/jdbc/2020money");
-			   con = ds.getConnection(); 
-			 //  DataSource ds = (DataSource)init.lookup("java:comp/env/jdbc/jspbeginner");
-
-
-		}catch(Exception e){
-			System.out.println("커넥션풀 DataSource얻기 실패  : " + e);
-		}
 		
 	}//DAO생성자 끝
 	
@@ -74,7 +73,7 @@ public class MoneyDAO {
 		try {
 			//1.DB연결 : DataSource(커넥션풀)로부터 Connection(접속객체)얻기 
 		//	con = dataFactory.getConnection();
-			con = DriverManager.getConnection(DBURL, DBID, DBPW); 
+			con= getConnection();
 			
 			//getter메소드들을 이용해 DB에 추가할 정보를 가져 옵니다.
 			String usedetails = MoneyBean.getUsedetails();
@@ -103,13 +102,7 @@ public class MoneyDAO {
 		} catch (Exception e) {
 			System.out.println("addMember메소드 내부에서 SQL실행 오류 : " + e);
 		} finally {			
-			try {
-				//자원해제
-				if(pstmt != null) pstmt.close();
-				if(con != null) con.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}	
+			resourceClose();	
 		}//finally
 		
 	}//addMember메소드 끝
@@ -126,12 +119,12 @@ public class MoneyDAO {
 		
 		
 		try {
-			Class.forName("com.mysql.jdbc.Driver");
+
 
 			System.out.println("드라이버 로드 성공!");
 			//1.DB연결 : DataSource(커넥션풀)로부터 Connection(접속객체)얻기 
 		// con = dataFactory.getConnection();
-			con = DriverManager.getConnection(DBURL, DBID, DBPW); //
+			con = getConnection();
 
 			//2.SQL문 (SELECT)
 			//-> 회원정보를 최근 가입일순으로 내림차순 정렬 하여 조회(검색)할 SQL문 만들기
@@ -181,14 +174,7 @@ public class MoneyDAO {
 		} catch (Exception e) {
 			System.out.println("listMembers메소드 내부에서 SQL실행 오류 : " + e);
 		} finally {
-			try {
-				//자원해제
-				if(rs != null) rs.close();
-				if(pstmt != null) pstmt.close();
-				if(con != null) con.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}	
+			resourceClose();
 		}
 		return list; //검색한 회원정보들(MemberBean객체들)을 저장하고 있는 ArrayList를 
 				     //member.jsp로 반환

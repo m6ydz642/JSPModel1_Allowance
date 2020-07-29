@@ -29,9 +29,8 @@
 		//out.print(membersList.size());//검색한 회원 정보들(MemberBean객체들)의 갯수 출력
 %>    
 
-   
+ 
 
-  
 	<table align="center" width="100%">
 		<tr align="center" bgcolor="#99ccff">
 			<td width="7%">사용내역</td>
@@ -60,11 +59,7 @@
 		 	MoneyBean bean = MoneyList.get(i);
 %>	 
 
-	
-<!-- DB연결없이 사용하려고 했던 실습같음 (기억이 안남) -->
-<%-- 			<td> <jsp:getProperty property="usedetails" name="m"/> </td> --%>
-<%-- 			<td> <jsp:getProperty property="amount" name="m"/> </td>   --%>
-<%-- 			<td> <jsp:getProperty property="usetype" name="m"/> </td> --%>
+
 			
 			<tr align="center"> 
 			<td width="7%"><%=bean.getUsedetails() %></td>
