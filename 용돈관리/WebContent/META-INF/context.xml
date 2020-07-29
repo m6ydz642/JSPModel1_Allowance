@@ -44,7 +44,7 @@
 	auth="Container"
 	type="javax.sql.DataSource"
 	driverClassName="com.mysql.jdbc.Driver"
-	url="jdbc:mysql://localhost:3306/2020money"
+	url="jdbc:mysql://59.20.215.149:3306/2020money"
 	username="root"
 	password="1234"	
 	/>
