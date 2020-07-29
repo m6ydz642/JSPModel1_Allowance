@@ -45,7 +45,7 @@
 	type="javax.sql.DataSource"
 	driverClassName="com.mysql.jdbc.Driver"
 	url="jdbc:mysql://59.20.215.149:3306/2020money"
-	username="root"
+	username="2020money"
 	password="1234"	
 	/>
 
